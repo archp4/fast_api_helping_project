@@ -46,7 +46,7 @@ def getPosts():
     }
 
 
-@app.post("/create-post")
+@app.post("/posts")
 def createPost(payload: Post):
     post = payload.model_dump()
     post['id'] = randrange(0, 999999)
@@ -61,6 +61,6 @@ def createPost(payload: Post):
 def get_post_by_id(id: int):
     post = find_post(id)
     return {
-        "message": f"your request post by id :{id}",
+        "message": f"your request post by id : {id}",
         "data": post
     }
