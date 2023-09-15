@@ -47,7 +47,7 @@ def root():  # this is root/home
 
 
 @app.get("/posts")  # this is for getting all post
-def getPosts():
+def get_all_Posts():
     return {
         "message": "All Posts",
         "data": my_post
@@ -55,7 +55,7 @@ def getPosts():
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def createPost(payload: Post):
+def create_Post(payload: Post):
     # storing post data as dict
     post = payload.model_dump()
 
@@ -102,3 +102,26 @@ def delete_post_by_id(id: int):
                             detail=f"Post by id : {id} is not found")
     my_post.pop(index)  # deleting post for array
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/posts/{id}")
+def update_post_by_id(id: int, payload: Post):
+    # getting post index by id and storing in post(variable)
+    index = find_post_index(id)
+    if index == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Post by id : {id} is not found")
+
+    # storing updated post data as dict
+    post = payload.model_dump()
+
+    # giving back post id
+    post['id'] = id
+
+    # storing upated post in list
+    my_post[index] = post
+
+    return {
+        "message": "Post Updated",
+        "data": post
+    }
