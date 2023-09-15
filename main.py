@@ -4,7 +4,7 @@ from typing import Optional
 from random import randrange
 
 
-class Post(BaseModel):
+class Post(BaseModel):  # post schema for valdating post
     title: str
     content: str
     published: bool = True
