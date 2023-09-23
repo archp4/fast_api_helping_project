@@ -76,18 +76,14 @@ def get_all_Posts():
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_Post(payload: Post):
-    # storing post data as dict
-    post = payload.model_dump()
 
-    # giving random id using randrange function
-    post['id'] = randrange(0, 999999)
-
-    # storing new post with id in list
-    my_post.append(post)
-
+    cursor.execute(""" INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) RETURNING * """, (payload.title, payload.content, payload.published)
+                   )
+    new_post = cursor.fetchone()
+    conn.commit()
     return {
         "message": "Created New Post",
-        "data": post
+        "data": new_post
     }
 
 
