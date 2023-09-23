@@ -124,22 +124,15 @@ def delete_post_by_id(id: int):
 
 @app.put("/posts/{id}")
 def update_post_by_id(id: int, payload: Post):
-    # getting post index by id and storing in post(variable)
-    index = find_post_index(id)
-    if index == None:
+    cursor.execute(''' UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *''',
+                   (payload.title, payload.content, payload.published, str(id)))
+
+    updated_post = cursor.fetchone()
+    conn.commit()
+    if updated_post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post by id : {id} is not found")
-
-    # storing updated post data as dict
-    post = payload.model_dump()
-
-    # giving back post id
-    post['id'] = id
-
-    # storing upated post in list
-    my_post[index] = post
-
     return {
         "message": "Post Updated",
-        "data": post
+        "data": updated_post
     }
