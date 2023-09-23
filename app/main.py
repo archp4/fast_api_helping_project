@@ -99,7 +99,9 @@ def get_lastest_post():
 
 @app.get("/posts/{id}")
 def get_post_by_id(id: int):
-    post = find_post(id)  # getting post by id and storing in post(variable)
+
+    cursor.execute(''' SELECT * FROM posts WHERE id = %s ''', (str(id)))
+    post = cursor.fetchone()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"your requested post by id : {id} is not found")
