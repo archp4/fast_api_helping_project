@@ -66,9 +66,11 @@ def root():  # this is root/home
 
 @app.get("/posts")  # this is for getting all post
 def get_all_Posts():
+    cursor.execute(''' SELECT * FROM posts; ''')
+    posts = cursor.fetchall()
     return {
         "message": "All Posts",
-        "data": my_post
+        "data": posts
     }
 
 
