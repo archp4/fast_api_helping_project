@@ -4,6 +4,12 @@ from typing import Optional
 from random import randrange
 
 
+# for db connection
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import time
+
+
 class Post(BaseModel):  # post schema for valdating post
     title: str
     content: str
@@ -13,6 +19,18 @@ class Post(BaseModel):  # post schema for valdating post
 
 app = FastAPI()  # fastAPI instance
 
+# connecting with db
+while True:
+    try:
+        conn = psycopg2.connect(host='localhost', database='FastAPI',
+                                user='postgres', password='admin', cursor_factory=RealDictCursor)
+        cursor = conn.cursor()
+        print("Conneted With DB")
+        break
+    except Exception as error:
+        print("Connection Failed")
+        print("Error :", error)
+        time.sleep(2)
 
 # temp array to store post on server
 my_post = [
