@@ -80,10 +80,8 @@ def create_Post(payload: Post, db: Session = Depends(getDB)):
 
 
 @app.get("/posts/{id}")
-def get_post_by_id(id: int):
-
-    cursor.execute(''' SELECT * FROM posts WHERE id = %s ''', (str(id)))
-    post = cursor.fetchone()
+def get_post_by_id(id: int, db: Session = Depends(getDB)):
+    post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"your requested post by id : {id} is not found")
