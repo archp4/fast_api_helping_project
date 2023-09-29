@@ -32,32 +32,6 @@ while True:
         print("Error :", error)
         time.sleep(2)
 
-# temp array to store post on server
-my_post = [
-    {
-        "title": "post 1",
-        "content": "content 1",
-        "id": 1
-    },
-    {
-        "title": "post 2",
-        "content": "content 2",
-        "id": 2
-    }
-]
-
-
-def find_post(id):  # function to find post by id
-    for p in my_post:
-        if (p['id'] == id):
-            return p
-
-
-def find_post_index(id):  # function to find post index by id
-    for index, post in enumerate(my_post):
-        if (post['id'] == id):
-            return index
-
 
 @app.get("/")
 def root():  # this is root/home
@@ -87,14 +61,14 @@ def create_Post(payload: Post):
     }
 
 
-@app.get("/posts/latest")
-def get_lastest_post():
-    # getting lastest post by using length function to find length and subtracting with one for last index
-    post = my_post[len(my_post)-1]
-    return {
-        "message": "lastest post",
-        "data": post
-    }
+# @app.get("/posts/latest")
+# def get_lastest_post():
+#     # getting lastest post by using length function to find length and subtracting with one for last index
+#     post = my_post[len(my_post)-1]
+#     return {
+#         "message": "lastest post",
+#         "data": post
+#     }
 
 
 @app.get("/posts/{id}")
@@ -113,12 +87,13 @@ def get_post_by_id(id: int):
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post_by_id(id: int):
-    # getting post index by id and storing in post(variable)
-    index = find_post_index(id)
-    if index == None:
+    cursor.execute(''' DELETE FROM posts WHERE id = %s RETURNING *''',
+                   (str(id)))
+    deleted_post = cursor.fetchone()
+    conn.commit()
+    if deleted_post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post by id : {id} is not found")
-    my_post.pop(index)  # deleting post for array
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
