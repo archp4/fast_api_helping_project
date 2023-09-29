@@ -14,7 +14,7 @@ from . import models
 from .database import engine, getDB
 from sqlalchemy.orm import Session
 
-
+# checking models existing into db
 models.Base.metadata.create_all(bind=engine)
 
 
@@ -23,9 +23,6 @@ class Post(BaseModel):  # post schema for valdating post
     content: str
     published: bool = True
     rating: Optional[int] = None
-
-
-# checking models existing into db
 
 
 app = FastAPI()  # fastAPI instance
@@ -49,15 +46,10 @@ def root():  # this is root/home
     return {"message": "Welcome to My API"}
 
 
-@app.get("/orm")
-def Checking_ORM(db: Session = Depends(getDB)):  # this is root/home
-    return {"message": "ORM Working"}
-
-
 @app.get("/posts")  # this is for getting all post
-def get_all_Posts():
-    cursor.execute(''' SELECT * FROM posts; ''')
-    posts = cursor.fetchall()
+def get_all_Posts(db: Session = Depends(getDB)):
+    # getting all post form table/database
+    posts = db.query(models.Post).all()
     return {
         "message": "All Posts",
         "data": posts
