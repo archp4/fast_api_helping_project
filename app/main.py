@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, HTTPException, Response
+from fastapi import FastAPI, status, HTTPException, Response, Depends
 from pydantic import BaseModel
 from typing import Optional
 from random import randrange
@@ -9,12 +9,23 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 
+# ORM Files
+from . import models
+from .database import engine, getDB
+from sqlalchemy.orm import Session
+
+
+models.Base.metadata.create_all(bind=engine)
+
 
 class Post(BaseModel):  # post schema for valdating post
     title: str
     content: str
     published: bool = True
     rating: Optional[int] = None
+
+
+# checking models existing into db
 
 
 app = FastAPI()  # fastAPI instance
@@ -36,6 +47,11 @@ while True:
 @app.get("/")
 def root():  # this is root/home
     return {"message": "Welcome to My API"}
+
+
+@app.get("/orm")
+def Checking_ORM(db: Session = Depends(getDB)):  # this is root/home
+    return {"message": "ORM Working"}
 
 
 @app.get("/posts")  # this is for getting all post
