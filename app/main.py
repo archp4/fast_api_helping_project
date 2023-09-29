@@ -22,7 +22,6 @@ class Post(BaseModel):  # post schema for valdating post
     title: str
     content: str
     published: bool = True
-    rating: Optional[int] = None
 
 
 app = FastAPI()  # fastAPI instance
@@ -57,12 +56,13 @@ def get_all_Posts(db: Session = Depends(getDB)):
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_Post(payload: Post):
+def create_Post(payload: Post, db: Session = Depends(getDB)):
+    # converting payload into dictonary then unzipping data
+    new_post = models.Post(**payload.model_dump())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
 
-    cursor.execute(""" INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) RETURNING * """, (payload.title, payload.content, payload.published)
-                   )
-    new_post = cursor.fetchone()
-    conn.commit()
     return {
         "message": "Created New Post",
         "data": new_post
