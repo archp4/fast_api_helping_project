@@ -3,6 +3,8 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 
+# this model is form database/ table
+
 
 class Post(Base):
     __tablename__ = "orm_post"

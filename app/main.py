@@ -1,5 +1,5 @@
 from fastapi import FastAPI, status, HTTPException, Response, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel  # formatting Request and Response
 from typing import Optional
 from random import randrange
 
