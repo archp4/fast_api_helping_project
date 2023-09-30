@@ -26,18 +26,18 @@ class Post(BaseModel):  # post schema for valdating post
 
 app = FastAPI()  # fastAPI instance
 
-# connecting with db
-while True:
-    try:
-        conn = psycopg2.connect(host='localhost', database='FastAPI',
-                                user='postgres', password='admin', cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
-        print("Conneted With DB")
-        break
-    except Exception as error:
-        print("Connection Failed")
-        print("Error :", error)
-        time.sleep(2)
+# # connecting with db
+# while True:
+#     try:
+#         conn = psycopg2.connect(host='localhost', database='FastAPI',
+#                                 user='postgres', password='admin', cursor_factory=RealDictCursor)
+#         cursor = conn.cursor()
+#         print("Conneted With DB")
+#         break
+#     except Exception as error:
+#         print("Connection Failed")
+#         print("Error :", error)
+#         time.sleep(2)
 
 
 @app.get("/")
@@ -110,16 +110,20 @@ def delete_post_by_id(id: int, db: Session = Depends(getDB)):
 
 
 @app.put("/posts/{id}")
-def update_post_by_id(id: int, payload: Post):
-    cursor.execute(''' UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *''',
-                   (payload.title, payload.content, payload.published, str(id)))
-
-    updated_post = cursor.fetchone()
-    conn.commit()
-    if updated_post == None:
+def update_post_by_id(id: int, payload: Post, db: Session = Depends(getDB)):
+    # Creating Query for getting Post
+    post = db.query(models.Post).filter(models.Post.id == id)
+    # check if post is found or not if not then 404
+    if post.first() == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post by id : {id} is not found")
+
+    # updating post from Table via orm
+    post.update(payload.model_dump(), synchronize_session=False)
+
+    # saving the change
+    db.commit()
     return {
         "message": "Post Updated",
-        "data": updated_post
+        "data": post.first()
     }
