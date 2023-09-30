@@ -92,14 +92,20 @@ def get_post_by_id(id: int, db: Session = Depends(getDB)):
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post_by_id(id: int):
-    cursor.execute(''' DELETE FROM posts WHERE id = %s RETURNING *''',
-                   (str(id)))
-    deleted_post = cursor.fetchone()
-    conn.commit()
-    if deleted_post == None:
+def delete_post_by_id(id: int, db: Session = Depends(getDB)):
+    # Creating Query for getting Post
+    post = db.query(models.Post).filter(models.Post.id == id)
+    # check if post is found or not if not then 404
+    if post.first() == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post by id : {id} is not found")
+
+    # deleting post from Table via orm
+    post.delete(synchronize_session=False)
+
+    # saving the change
+    db.commit()
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
