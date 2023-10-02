@@ -1,6 +1,6 @@
 from fastapi import FastAPI, status, HTTPException, Response, Depends
-from pydantic import BaseModel  # formatting Request and Response
-from typing import Optional
+
+
 from random import randrange
 
 
@@ -10,18 +10,12 @@ from psycopg2.extras import RealDictCursor
 import time
 
 # ORM Files
-from . import models
+from . import models, formatting
 from .database import engine, getDB
 from sqlalchemy.orm import Session
 
 # checking models existing into db
 models.Base.metadata.create_all(bind=engine)
-
-
-class Post(BaseModel):  # post schema for valdating post
-    title: str
-    content: str
-    published: bool = True
 
 
 app = FastAPI()  # fastAPI instance
@@ -56,7 +50,7 @@ def get_all_Posts(db: Session = Depends(getDB)):
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_Post(payload: Post, db: Session = Depends(getDB)):
+def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
     # converting payload into dictonary then unzipping data
     new_post = models.Post(**payload.model_dump())
     db.add(new_post)
@@ -110,7 +104,7 @@ def delete_post_by_id(id: int, db: Session = Depends(getDB)):
 
 
 @app.put("/posts/{id}")
-def update_post_by_id(id: int, payload: Post, db: Session = Depends(getDB)):
+def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Depends(getDB)):
     # Creating Query for getting Post
     post = db.query(models.Post).filter(models.Post.id == id)
     # check if post is found or not if not then 404
