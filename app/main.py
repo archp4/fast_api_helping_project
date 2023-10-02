@@ -1,13 +1,5 @@
 from fastapi import FastAPI, status, HTTPException, Response, Depends
-
-
-from random import randrange
-
-
-# for db connection
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import time
+from typing import List  # Import for pydantic to Tell response will be list
 
 # ORM Files
 from . import models, formatting
@@ -20,36 +12,21 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()  # fastAPI instance
 
-# # connecting with db
-# while True:
-#     try:
-#         conn = psycopg2.connect(host='localhost', database='FastAPI',
-#                                 user='postgres', password='admin', cursor_factory=RealDictCursor)
-#         cursor = conn.cursor()
-#         print("Conneted With DB")
-#         break
-#     except Exception as error:
-#         print("Connection Failed")
-#         print("Error :", error)
-#         time.sleep(2)
-
 
 @app.get("/")
 def root():  # this is root/home
     return {"message": "Welcome to My API"}
 
 
-@app.get("/posts")  # this is for getting all post
+# this is for getting all post
+@app.get("/posts", response_model=List[formatting.PostResponse])
 def get_all_Posts(db: Session = Depends(getDB)):
     # getting all post form table/database
     posts = db.query(models.Post).all()
-    return {
-        "message": "All Posts",
-        "data": posts
-    }
+    return posts
 
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=formatting.PostResponse)
 def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
     # converting payload into dictonary then unzipping data
     new_post = models.Post(**payload.model_dump())
@@ -57,10 +34,7 @@ def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
     db.commit()
     db.refresh(new_post)
 
-    return {
-        "message": "Created New Post",
-        "data": new_post
-    }
+    return new_post
 
 
 # @app.get("/posts/latest")
@@ -73,16 +47,13 @@ def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
 #     }
 
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=formatting.PostResponse)
 def get_post_by_id(id: int, db: Session = Depends(getDB)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"your requested post by id : {id} is not found")
-    return {
-        "message": f"your requested post by id : {id}",
-        "data": post
-    }
+    return post
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -103,7 +74,7 @@ def delete_post_by_id(id: int, db: Session = Depends(getDB)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put("/posts/{id}")
+@app.put("/posts/{id}", response_model=formatting.PostResponse)
 def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Depends(getDB)):
     # Creating Query for getting Post
     post = db.query(models.Post).filter(models.Post.id == id)
@@ -117,7 +88,4 @@ def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Dep
 
     # saving the change
     db.commit()
-    return {
-        "message": "Post Updated",
-        "data": post.first()
-    }
+    return post.first()
