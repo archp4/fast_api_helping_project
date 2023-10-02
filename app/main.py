@@ -89,3 +89,14 @@ def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Dep
     # saving the change
     db.commit()
     return post.first()
+
+
+@app.post("/users", status_code=status.HTTP_201_CREATED, response_model=formatting.UserResponse)
+def create_User(payload: formatting.UserRequest, db: Session = Depends(getDB)):
+    # converting payload into dictonary then unzipping data
+    new_post = models.User(**payload.model_dump())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+
+    return new_post
