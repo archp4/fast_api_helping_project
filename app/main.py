@@ -2,7 +2,7 @@ from fastapi import FastAPI, status, HTTPException, Response, Depends
 from typing import List  # Import for pydantic to Tell response will be list
 
 # ORM Files
-from . import models, formatting,utils
+from . import models, formatting, utils
 from .database import engine, getDB
 from sqlalchemy.orm import Session
 
@@ -93,8 +93,7 @@ def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Dep
 
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=formatting.UserResponse)
 def create_User(payload: formatting.UserRequest, db: Session = Depends(getDB)):
-    #hashing the password
-    hash_password= 
+
     # converting payload into dictonary then unzipping data
     new_post = models.User(**payload.model_dump())
     db.add(new_post)
