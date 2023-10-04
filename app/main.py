@@ -93,7 +93,9 @@ def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Dep
 
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=formatting.UserResponse)
 def create_User(payload: formatting.UserRequest, db: Session = Depends(getDB)):
-
+    # hashing the password
+    hash_password = utils.hash(payload.password)
+    payload.password = hash_password
     # converting payload into dictonary then unzipping data
     new_post = models.User(**payload.model_dump())
     db.add(new_post)
