@@ -95,6 +95,7 @@ def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Dep
 def create_User(payload: formatting.UserRequest, db: Session = Depends(getDB)):
     # hashing the password
     hash_password = utils.hash(payload.password)
+    # replacing hash with password
     payload.password = hash_password
     # converting payload into dictonary then unzipping data
     new_post = models.User(**payload.model_dump())
