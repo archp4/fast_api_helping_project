@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 
 router = APIRouter(
-    prefix="/posts",
-    tags=['Post']
+    prefix="/posts",  # prefix attach to path operation with router
+    tags=['Post']  # grouping
 )
 
 

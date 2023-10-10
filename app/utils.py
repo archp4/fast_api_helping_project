@@ -6,3 +6,8 @@ pwd_context = CryptContext(
 
 def hash(text: str):
     return pwd_context.hash(text)  # hashing password
+
+
+def verify(plain_password: str, hash_password: str):
+    # checking password is correct or not
+    return pwd_context.verify(plain_password, hash=hash_password)

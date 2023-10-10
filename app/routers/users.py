@@ -7,8 +7,8 @@ from ..database import getDB
 from sqlalchemy.orm import Session
 
 router = APIRouter(
-    prefix="/users",
-    tags=['User']
+    prefix="/users",  # prefix attach to path operation with router
+    tags=['User']  # Grouping
 )
 
 
