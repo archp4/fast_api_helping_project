@@ -6,17 +6,20 @@ from ..database import getDB
 from sqlalchemy.orm import Session
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/posts",
+    tags=['Post']
+)
 
 
-@router.get("/posts", response_model=List[formatting.PostResponse])
+@router.get("/", response_model=List[formatting.PostResponse])
 def get_all_Posts(db: Session = Depends(getDB)):  # this is for getting all post
     # getting all post form table/database
     posts = db.query(models.Post).all()
     return posts
 
 
-@router.post("/posts", status_code=status.HTTP_201_CREATED, response_model=formatting.PostResponse)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=formatting.PostResponse)
 def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
     # converting payload into dictonary then unzipping data
     new_post = models.Post(**payload.model_dump())
@@ -37,7 +40,7 @@ def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
 #     }
 
 
-@router.get("/posts/{id}", response_model=formatting.PostResponse)
+@router.get("/{id}", response_model=formatting.PostResponse)
 def get_post_by_id(id: int, db: Session = Depends(getDB)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
@@ -46,7 +49,7 @@ def get_post_by_id(id: int, db: Session = Depends(getDB)):
     return post
 
 
-@router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post_by_id(id: int, db: Session = Depends(getDB)):
     # Creating Query for getting Post
     post = db.query(models.Post).filter(models.Post.id == id)
@@ -64,7 +67,7 @@ def delete_post_by_id(id: int, db: Session = Depends(getDB)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.put("/posts/{id}", response_model=formatting.PostResponse)
+@router.put("/{id}", response_model=formatting.PostResponse)
 def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Depends(getDB)):
     # Creating Query for getting Post
     post = db.query(models.Post).filter(models.Post.id == id)
