@@ -1,5 +1,6 @@
 
 from fastapi import status, HTTPException, Depends, APIRouter
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 # ORM Files
 from .. import models, formatting, utils, oauth2
 from ..database import getDB
@@ -12,10 +13,10 @@ router = APIRouter(
 
 
 @router.post("/login")
-def get_user_by_id(user_credentials: formatting.UserLogin, db: Session = Depends(getDB)):
+def get_user_by_id(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(getDB)):
     # find user by email
     user = db.query(models.User).filter(
-        models.User.email == user_credentials.email).first()
+        models.User.email == user_credentials.username).first()
     # Checking User exist or not
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
