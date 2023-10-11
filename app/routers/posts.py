@@ -1,7 +1,7 @@
 from typing import List  # Import for pydantic to Tell response will be list
 from fastapi import status, HTTPException, Response, Depends, APIRouter
 # ORM Files
-from .. import models, formatting
+from .. import models, formatting, oauth2
 from ..database import getDB
 from sqlalchemy.orm import Session
 
@@ -20,7 +20,7 @@ def get_all_Posts(db: Session = Depends(getDB)):  # this is for getting all post
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=formatting.PostResponse)
-def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB)):
+def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB), get_current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # converting payload into dictonary then unzipping data
     new_post = models.Post(**payload.model_dump())
     db.add(new_post)

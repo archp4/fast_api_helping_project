@@ -19,11 +19,11 @@ def get_user_by_id(user_credentials: OAuth2PasswordRequestForm = Depends(), db: 
         models.User.email == user_credentials.username).first()
     # Checking User exist or not
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Invalid Credentials")
     # Checking password is valid or not
     if not utils.verify(user_credentials.password, user.password):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Invalid Credentials")
     # Creating Token
     token = oauth2.create_access_token(payload={'user_id': user.id})
