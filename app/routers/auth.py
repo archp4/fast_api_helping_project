@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.post("/login")
+@router.post("/login", response_model=formatting.Token)
 def get_user_by_id(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(getDB)):
     # find user by email
     user = db.query(models.User).filter(

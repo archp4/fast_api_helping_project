@@ -13,14 +13,15 @@ router = APIRouter(
 
 
 @router.get("/", response_model=List[formatting.PostResponse])
-def get_all_Posts(db: Session = Depends(getDB)):  # this is for getting all post
+# this is for getting all post
+def get_all_Posts(db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # getting all post form table/database
     posts = db.query(models.Post).all()
     return posts
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=formatting.PostResponse)
-def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB), get_current_user: int = Depends(oauth2.get_cuurent_user_id)):
+def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # converting payload into dictonary then unzipping data
     new_post = models.Post(**payload.model_dump())
     db.add(new_post)
@@ -41,7 +42,7 @@ def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB), ge
 
 
 @router.get("/{id}", response_model=formatting.PostResponse)
-def get_post_by_id(id: int, db: Session = Depends(getDB)):
+def get_post_by_id(id: int, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -50,7 +51,7 @@ def get_post_by_id(id: int, db: Session = Depends(getDB)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post_by_id(id: int, db: Session = Depends(getDB)):
+def delete_post_by_id(id: int, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # Creating Query for getting Post
     post = db.query(models.Post).filter(models.Post.id == id)
     # check if post is found or not if not then 404
@@ -68,7 +69,7 @@ def delete_post_by_id(id: int, db: Session = Depends(getDB)):
 
 
 @router.put("/{id}", response_model=formatting.PostResponse)
-def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Depends(getDB)):
+def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # Creating Query for getting Post
     post = db.query(models.Post).filter(models.Post.id == id)
     # check if post is found or not if not then 404

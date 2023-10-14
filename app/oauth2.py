@@ -1,9 +1,10 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from . import formatting
+from . import formatting, models, database
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
+from sqlalchemy.orm import Session
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # SECRET_KEY
@@ -33,7 +34,7 @@ def verfiy_access_token(token: str, exception):
         # decoding token
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         # taking user id for decoded_token
-        user_id: str = decoded_token.get('user_id')
+        user_id: int = decoded_token.get('user_id')
         if user_id is None:  # if token does not id throw error
             raise exception
         token_data = formatting.TokenModel(user_id=user_id)
@@ -44,7 +45,13 @@ def verfiy_access_token(token: str, exception):
     return token_data
 
 
-def get_cuurent_user_id(token: str = Depends(oauth2_scheme)):
+def get_cuurent_user_id(token: str = Depends(oauth2_scheme), db: Session = Depends(database.getDB)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Could not validae credentials", headers={"WWW-Authenticate": "Bearer"})
-    return verfiy_access_token(token, credentials_exception)
+    # verify user token and get user id
+    access_token = verfiy_access_token(token, credentials_exception)
+    # getting user by id
+    user = db.query(models.User).filter(
+        models.User.id == access_token.user_id).first()
+    # returning user
+    return user

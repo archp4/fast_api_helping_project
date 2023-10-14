@@ -46,4 +46,4 @@ class Token(BaseModel):
 
 
 class TokenModel(BaseModel):
-    user_id: str
+    user_id: int
