@@ -16,6 +16,7 @@ class PostCreate(PostBase):
 class PostResponse(PostBase):  # Format for Response of a Single Post
     id: int
     created_at: datetime
+    user_id: int
 
     class Config:
         from_attributes = True
