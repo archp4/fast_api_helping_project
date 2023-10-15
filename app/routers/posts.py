@@ -23,7 +23,7 @@ def get_all_Posts(db: Session = Depends(getDB), current_user: int = Depends(oaut
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=formatting.PostResponse)
 def create_Post(payload: formatting.PostCreate, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # converting payload into dictonary then unzipping data
-    new_post = models.Post(**payload.model_dump())
+    new_post = models.Post(user_id=current_user.id, ** payload.model_dump())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -53,14 +53,19 @@ def get_post_by_id(id: int, db: Session = Depends(getDB), current_user: int = De
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post_by_id(id: int, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # Creating Query for getting Post
-    post = db.query(models.Post).filter(models.Post.id == id)
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+
+    post = post_query.first()  # temp store post
     # check if post is found or not if not then 404
-    if post.first() == None:
+    if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post by id : {id} is not found")
-
+    # check if user is owner of post or not
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"requested action is unauthorized")
     # deleting post from Table via orm
-    post.delete(synchronize_session=False)
+    post_query.delete(synchronize_session=False)
 
     # saving the change
     db.commit()
@@ -71,15 +76,21 @@ def delete_post_by_id(id: int, db: Session = Depends(getDB), current_user: int =
 @router.put("/{id}", response_model=formatting.PostResponse)
 def update_post_by_id(id: int, payload: formatting.PostCreate, db: Session = Depends(getDB), current_user: int = Depends(oauth2.get_cuurent_user_id)):
     # Creating Query for getting Post
-    post = db.query(models.Post).filter(models.Post.id == id)
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    # temp store post
+    post = post_query.first()
     # check if post is found or not if not then 404
-    if post.first() == None:
+    if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post by id : {id} is not found")
 
+    # check if user is owner of post or not
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"requested action is unauthorized")
     # updating post from Table via orm
-    post.update(payload.model_dump(), synchronize_session=False)
+    post_query.update(payload.model_dump(), synchronize_session=False)
 
     # saving the change
     db.commit()
-    return post.first()
+    return post_query.first()
